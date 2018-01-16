@@ -1,8 +1,10 @@
-const fetch = require('fetch-cookie/node-fetch')(require('node-fetch'));
 const links = require('./links');
-const {getCategoriesFromPage, getCompaniesFromPage, getCSRFTokenFromPage, getVacanciesFromPage, getVacanciesFromRss} = require('../parser');
+const {getCategoriesFromPage, getCompaniesFromPage, getCSRFTokenFromPage, getVacanciesFromPage, getVacanciesFromRss, hasGetMoreButton} = require('../parser');
 
 const timeout = ms => new Promise(res => setTimeout(res, ms));
+const fetch = require('fetch-cookie/node-fetch')(require('node-fetch'));
+
+
 
 const buildQuery = (params) =>
 	Object
@@ -26,25 +28,28 @@ const fetchXHRVacancies = async (url, referer, CSRFToken, count) =>
 	}).then(responce => responce.json());
 
 
-
 const grabVacanciesBuilder = async (htmlLink, jsonLink) => {
 	let html = await fetch(htmlLink)
 		.then(responce => responce.text());
 
 	console.log(htmlLink);
 	const CSRFToken = getCSRFTokenFromPage(html);
+	const hasMore = hasGetMoreButton(html);
 	const vacancies = getVacanciesFromPage(html);
-	let last, num;
+	let last, num ,i = 0;
 
-	do {
-		await timeout(5000);
-		({html, last, num} = await fetchXHRVacancies(
-			jsonLink,
-			htmlLink,
-			CSRFToken, vacancies.length));
-		const xhrVacancies = getVacanciesFromPage(html);
-		vacancies.push(...xhrVacancies);
-	} while (!last);
+	if(hasMore){
+		do {
+			({html, last, num} = await fetchXHRVacancies(
+				jsonLink,
+				htmlLink,
+				CSRFToken, vacancies.length));
+			const xhrVacancies = getVacanciesFromPage(html);
+			vacancies.push(...xhrVacancies);
+			i++;
+		} while (!last);
+		console.log(jsonLink,i);
+	}
 
 	return vacancies;
 };
@@ -56,10 +61,9 @@ const grabCompanyVacancies = async (company) => grabVacanciesBuilder(
 );
 
 const grabCategoryVacancies = async (category) => grabVacanciesBuilder(
-	links.getCategoryVacanciesPage(encodeURIComponent(category)),
-	links.getCompanyVacanciesJSON(encodeURIComponent(category))
+	links.getCategoryVacanciesPage(category),
+	links.getCategoryVacanciesJSON(category)
 );
-
 
 const grabCategories = async () => {
 	const html = await fetch(links.getRootPage())
@@ -74,10 +78,24 @@ const grabTop10Companies = async () => {
 };
 
 
+const grabCompanyVacanciesByRss = async (company) => {
+	const xml = await fetch(links.getCompanyVacanciesRSS(company))
+		.then(responce => responce.text());
+	return getVacanciesFromRss(xml);
+};
+
+const grabSearchVacanciesByRss = async (query) => {
+	const xml = await fetch(links.getSearchVacanciesRSS(query))
+		.then(responce => responce.text());
+	return getVacanciesFromRss(xml);
+};
 
 module.exports = {
 	grabCompanyVacancies,
 	grabCategories,
 	grabTop10Companies,
-	grabCategoryVacancies
+	grabCategoryVacancies,
+	grabCompanyVacanciesByRss,
+	grabSearchVacanciesByRss
+
 };

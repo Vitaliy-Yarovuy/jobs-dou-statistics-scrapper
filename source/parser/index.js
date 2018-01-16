@@ -53,6 +53,11 @@ const getCSRFTokenFromPage = (responceText) =>{
 };
 
 //https://jobs.dou.ua/companies/epam-systems/vacancies/
+const hasGetMoreButton = (responceText) =>{
+	return /<div\s*class\s*=\s*\"\s*more-btn\s*"/.test(responceText);
+};
+
+//https://jobs.dou.ua/companies/epam-systems/vacancies/
 const getVacanciesFromPage = (responceText) => {
 	const doc = parse5.parse(responceText);
 
@@ -62,6 +67,8 @@ const getVacanciesFromPage = (responceText) => {
 	return items
 		.map(item => {
 			const link = search(item, conditionBuilder('a', {'class': 'vt'}))[0],
+				citiesTag = search(item, conditionBuilder('span', {'class': 'cities'}))[0],
+				cities = getText(citiesTag),
 				isHot = hasClass(item, '__hot'),
 				href = getAttr(link, 'href'),
 				[company, ,id,] = href.split('/').splice(-4),
@@ -76,6 +83,7 @@ const getVacanciesFromPage = (responceText) => {
 				href,
 				isHot,
 				desc,
+				cities
 				//category - not present
 				//date - not present
 			}
@@ -96,7 +104,7 @@ const getVacanciesFromRss = (responceText) => {
 
 		const title = getText(search(item, conditionBuilder('title'))[0]),
 			href = getText(search(item, conditionBuilder('rlink'))[0]) || '',
-			date = new Date(getText(search(item, conditionBuilder('pubDate'))[0])),
+			date = getText(search(item, conditionBuilder('pubdate'))[0]),
 			desc = parse5.serialize(search(item, conditionBuilder('description'))[0]).replace(/\s+/gi,' ').trim(),
 			[company, ,id,] = href.split('/').splice(-4);
 
@@ -107,20 +115,19 @@ const getVacanciesFromRss = (responceText) => {
 			href,
 			desc,
 			date
+			//cities
 			//category - not present
 			//isHot - not present
 		}
-
 	});
-
 };
-
 
 
 module.exports = {
 	getCategoriesFromPage,
 	getCompaniesFromPage,
 	getCSRFTokenFromPage,
+	hasGetMoreButton,
 	getVacanciesFromPage,
-	getVacanciesFromRss
+	getVacanciesFromRss,
 };
