@@ -1,10 +1,6 @@
 const links = require('./links');
 const {getCategoriesFromPage, getCompaniesFromPage, getCSRFTokenFromPage, getVacanciesFromPage, getVacanciesFromRss, hasGetMoreButton} = require('../parser');
-
-const timeout = ms => new Promise(res => setTimeout(res, ms));
-const fetch = require('fetch-cookie/node-fetch')(require('node-fetch'));
-
-
+const {fetch} = require('./fetch');
 
 const buildQuery = (params) =>
 	Object
@@ -97,5 +93,4 @@ module.exports = {
 	grabCategoryVacancies,
 	grabCompanyVacanciesByRss,
 	grabSearchVacanciesByRss
-
 };
