@@ -6,9 +6,10 @@ exports.getTop50Page = () => `https://jobs.dou.ua/top50/`;
 
 exports.getCompanyVacanciesPage = (company) => `https://jobs.dou.ua/companies/${encode(company)}/vacancies/`;
 exports.getCompanyVacanciesJSON = (company) => `https://jobs.dou.ua/vacancies/${encode(company)}/xhr-load/`;
-exports.getCompanyVacanciesRSS = (company) => `https://jobs.dou.ua/vacancies/${encode(company)}/feeds/`;
+exports.getCompanyVacanciesRSS = (company) => `https://jobs.dou.ua/vacancies/${(company)}/feeds/`;
 
 exports.getCategoryVacanciesPage = (category) => `https://jobs.dou.ua/vacancies/?category=${encode(category)}`;
 exports.getCategoryVacanciesJSON = (category) => `https://jobs.dou.ua/vacancies/xhr-load/?category=${encode(category)}`;
+exports.getCategoryVacanciesRSS = (category) => `https://jobs.dou.ua/vacancies/feeds/?category=${(category)}`;
 
 exports.getSearchVacanciesRSS = (query) => `https://jobs.dou.ua/vacancies/feeds/?search=${encode(query)}`;

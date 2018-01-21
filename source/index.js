@@ -4,10 +4,10 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const isWin = /^win/.test(process.platform);
+const out = path.normalize(`${__dirname}/../out`);
 
 async function main() {
 	try {
-		const out = path.normalize(`${__dirname}/../out`);
 
 		const categories = await scrapper.grabCategories();
 		const categoriesStream = fs.createWriteStream(`${out}/categories.csv`, {encoding: "utf8"});
@@ -15,9 +15,9 @@ async function main() {
 
 
 		csv
-			.writeToStream(categoriesStream, [
-				categories
-			], {headers: true});
+			.writeToStream(categoriesStream,
+				categories.map(item => [item.name])
+			, {headers: true});
 
 
 		const companies = await scrapper.grabTop10Companies();
@@ -30,28 +30,27 @@ async function main() {
 				, {headers: true});
 
 
-		const populateCategories = await scrapper.populateCategories(categories);
-		const populateCategoriesStream = fs.createWriteStream(`${out}/filled_categories.csv`, {encoding: "utf8"});
-		isWin && await populateCategoriesStream.write("\ufeff");
+		const fields = ['id',
+			'company',
+			'title',
+			'href',
+			'desc',
+			'date',
+			'cities',
+			'salary'];
 
-		csv
-			.writeToStream(populateCategoriesStream,
-				_.unzip(
-					Object.entries(populateCategories).map(([key, value]) => [key, ...value])
-				)
-				, {headers: true});
+		const toArray = vacancy => fields.map(key => vacancy[key]);
+		const toFileName = name => name.replace(/(\\|\/)/gi,'_');
 
+		for (const category of categories) {
+			const vacancies = await scrapper.grabVacancies(category.id);
 
-
-		for (const company of companies) {
-			const vacancies = await scrapper.grabVacancies(company.id, populateCategories);
-
-			const stream = fs.createWriteStream(`${out}/${company.id}.csv`, {encoding: "utf8"});
+			const stream = fs.createWriteStream(`${out}/${toFileName(category.name)}.csv`, {encoding: "utf8"});
 			isWin && await stream.write("\ufeff");
 			csv
 				.writeToStream(stream, [
-					['id', 'company', 'title', 'href', 'isHot', 'desc', 'cities', 'category', 'date'],
-					...vacancies.map(({id, company, title, href, isHot, desc, cities, category, date}) => [id, company, title, href, isHot, desc, cities, category, date])
+					fields,
+					...vacancies.map(toArray)
 				], {headers: true});
 		}
 
@@ -71,5 +70,3 @@ main().then(
 	}
 );
 
-
-// setInterval(() => {}, Number.POSITIVE_INFINITY);
