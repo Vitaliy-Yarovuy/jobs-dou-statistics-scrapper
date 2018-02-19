@@ -10,10 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "encodeurl": "^1.0.1",
+    "parse5": "^3.0.3"
+  },
+  "devDependencies": {
     "fast-csv": "^2.4.1",
     "fetch-cookie": "^0.7.0",
     "lodash": "^4.17.4",
-    "node-fetch": "^1.7.3",
-    "parse5": "^3.0.3"
+    "node-fetch": "^1.7.3"
   }
 }

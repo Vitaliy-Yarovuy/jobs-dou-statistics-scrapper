@@ -1,10 +1,11 @@
-const scrapper = require('./scrapper');
+global.fetch = require('fetch-cookie/node-fetch')(require('node-fetch'));
+const scrapper = require('./source/scrapper');
 const csv = require('fast-csv');
 const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const isWin = /^win/.test(process.platform);
-const out = path.normalize(`${__dirname}/../out`);
+const out = path.normalize(`${__dirname}/out`);
 
 async function main() {
 	try {

@@ -1,6 +1,5 @@
 const links = require('./links');
 const {getCategoriesFromPage, getCompaniesFromPage, getCSRFTokenFromPage, getVacanciesFromPage, getVacanciesFromRss, hasGetMoreButton} = require('../parser');
-const {fetch} = require('./fetch');
 
 const grabCategories = async () => {
 	const html = await fetch(links.getRootPage())
